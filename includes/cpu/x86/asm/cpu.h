@@ -13,4 +13,8 @@ void load_idtr(int limit, int addr);
 void asm_irq_handler1(void);
 void asm_irq_handler7(void);
 void asm_irq_handler12(void);
+
+extern void io_cli(void);
+extern void io_sti(void);
+extern void io_stihlt(void);
 #endif

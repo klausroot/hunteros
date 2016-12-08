@@ -3,6 +3,7 @@
 #include "dsctbl.h"
 #include "stdio.h"
 #include "irq.h"
+#include "system/fifo.h"
 
 struct boot_info{
     unsigned char   cyls;
@@ -16,12 +17,14 @@ struct boot_info{
 
 #define BOOT_INFO       0x0ff0
 
+struct st_fifo keyboard_fifo, mouse_fifo;
+
 void os_entry(void)
 {
-    
     struct boot_info *binfo;
     char var[64];
     unsigned char mouse_cursor[16*16];
+    char data;
 
     binfo =  (struct boot_info *)BOOT_INFO;
 
@@ -49,6 +52,23 @@ void os_entry(void)
     outb(PIC0_IMR, 0xf9);
     outb(PIC1_IMR, 0xef);
     
+    register_fifo(&keyboard_fifo, "keyboard");
+    register_fifo(&mouse_fifo, "mouse");
+    while(1){
+    	io_cli();
+    	if (!fifo_status("keyboard") && !fifo_status("mouse")){
+    		io_stihlt();
+    	}else {
+    		if (fifo_status("keyboard")){
+    			data = get_bdata_fifo("keyboard");
+    			io_sti();
+    			sprintf(var, "%02x", data);
+    			box_fill(COLOR_BRIGHT_LI_BLUE, 0, 16, 15, 32);
+    			draw_ascii_font8(0, 16, COLOR_WHITE, var);
+    		}
+    	}
+    }
+
     while(1)
     {
         cpu_hlt();// 

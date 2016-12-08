@@ -11,7 +11,7 @@
 
 [FILE "naskcpu.nas"]    ;文件名
 
-        GLOBAL  _cpu_hlt
+        GLOBAL  _cpu_hlt, _io_stihlt ;
         GLOBAL  _write_mem_8bits   ;程序中包含的函数名
         GLOBAL  _cpu_irq_disable, _cpu_irq_enable
         GLOBAL  _outb, _inb
@@ -28,7 +28,12 @@
 _cpu_hlt: ;void cpu_hlt(void)
         HLT
         RET
-
+        
+_io_stihlt:	; void io_stihlt(void);
+		STI
+		HLT
+		RET
+		
 _write_mem_8bits:      ;void write_mem_8bits(int addr, int val)
         MOV     ECX,[ESP+4]
         MOV     AL,[ESP+8]

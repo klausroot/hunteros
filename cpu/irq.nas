@@ -83,12 +83,19 @@ LC1:
 _irq_handler12:
 	PUSH	EBP
 	MOV	EBP,ESP
+	PUSH	100
+	PUSH	160
+	CALL	_outb
+	PUSH	98
+	PUSH	32
+	CALL	_outb
 	PUSH	15
 	PUSH	255
 	PUSH	0
 	PUSH	0
 	PUSH	0
 	CALL	_box_fill
+	ADD	ESP,36
 	PUSH	LC1
 	PUSH	7
 	PUSH	0

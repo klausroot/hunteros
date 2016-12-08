@@ -18,11 +18,13 @@ struct st_fifo{
 };
 
 void put_bdata_fifo(char data, char *name);
+char get_bdata_fifo(char *name);
 
 void put_wdata_fifo(short data, char *name);
 
 void put_dwdata_fifo(int data, char *name);
 
-int register_fifo(struct st_fifo *);
+int register_fifo(struct st_fifo *, char *name);
 
+int fifo_status(char *name);
 #endif

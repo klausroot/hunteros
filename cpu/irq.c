@@ -45,6 +45,8 @@ void irq_handler1(int *esp)
 
 void irq_handler12(int *esp)
 {
+    outb(PIC1_OCW2, 0x64);
+    outb(PIC0_OCW2, 0x62);
     box_fill(COLOR_BLACK, 0, 0, 32 * 8 - 1, 15);
     draw_ascii_font8(0, 0, COLOR_WHITE, "INT 2C (IRQ-12) : PS/2 mouse");
 }

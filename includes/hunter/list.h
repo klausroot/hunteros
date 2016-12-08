@@ -604,8 +604,8 @@ static inline void __hlist_del(struct hlist_node *n)
 static inline void hlist_del(struct hlist_node *n)
 {
 	__hlist_del(n);
-	n->next = n;
-	n->pprev = n;
+	n->next = NULL;
+	n->pprev = NULL;
 }
 
 static inline void hlist_del_init(struct hlist_node *n)
