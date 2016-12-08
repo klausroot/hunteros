@@ -1,0 +1,15 @@
+#ifndef _ASM_CPU_H_
+#define _ASM_CPU_H_
+
+void cpu_hlt(void);
+void write_mem_8bits(int addr, int val);
+void cpu_irq_disable(void);
+void cpu_irq_enable(void);
+void io_out_8bits(unsigned int port, unsigned char val);
+void load_gdtr(int limit, int addr);
+void load_idtr(int limit, int addr);
+
+void asm_irq_handler_1(void);
+void asm_irq_handler_7(void);
+void asm_irq_handler_12(void);
+#endif

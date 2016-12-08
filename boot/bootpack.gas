@@ -1,0 +1,83 @@
+	.file	"bootpack.c"
+	.data
+LC0:
+	.ascii "Hunter OS -- V1.0\0"
+LC1:
+	.ascii "-- Create by lichao.\0"
+LC2:
+	.ascii "Screen size : %d x %d.\0"
+	.text
+	.balign 2
+.globl _os_entry
+	.def	_os_entry;	.scl	2;	.type	32;	.endef
+_os_entry:
+	pushl	%ebp
+	movl	%esp, %ebp
+	pushl	%ebx
+	subl	$320, %esp
+	leal	-68(%ebp), %ebx
+	call	_init_gdt_idt
+	call	_init_pic
+	call	_init_palette
+	movswl	4086,%eax
+	pushl	%eax
+	movswl	4084,%eax
+	pushl	%eax
+	pushl	4088
+	call	_init_screen
+	pushl	$LC0
+	pushl	$7
+	pushl	$35
+	pushl	$5
+	call	_draw_ascii_font8
+	pushl	$LC1
+	pushl	$7
+	pushl	$54
+	pushl	$5
+	call	_draw_ascii_font8
+	addl	$44, %esp
+	movswl	4086,%eax
+	pushl	%eax
+	movswl	4084,%eax
+	pushl	%eax
+	pushl	$LC2
+	pushl	%ebx
+	call	_sprintf
+	pushl	%ebx
+	pushl	$7
+	leal	-324(%ebp), %ebx
+	pushl	$73
+	pushl	$5
+	call	_draw_ascii_font8
+	addl	$32, %esp
+	pushl	$14
+	pushl	%ebx
+	call	_init_mouse_cursor8
+	pushl	$16
+	pushl	%ebx
+	pushl	$152
+	pushl	$150
+	pushl	$16
+	pushl	$16
+	call	_draw_block8_8
+	addl	$32, %esp
+	pushl	$249
+	pushl	$33
+	call	_outb
+	pushl	$239
+	pushl	$161
+	call	_outb
+	addl	$16, %esp
+L5:
+	call	_cpu_hlt
+	jmp	L5
+	.def	_cpu_hlt;	.scl	2;	.type	32;	.endef
+	.def	_outb;	.scl	2;	.type	32;	.endef
+	.def	_draw_block8_8;	.scl	2;	.type	32;	.endef
+	.def	_init_mouse_cursor8;	.scl	2;	.type	32;	.endef
+	.def	_sprintf;	.scl	2;	.type	32;	.endef
+	.def	_draw_ascii_font8;	.scl	2;	.type	32;	.endef
+	.def	_init_screen;	.scl	2;	.type	32;	.endef
+	.def	_init_palette;	.scl	2;	.type	32;	.endef
+	.def	_init_pic;	.scl	2;	.type	32;	.endef
+	.def	_init_gdt_idt;	.scl	2;	.type	32;	.endef

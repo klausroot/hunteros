@@ -1,0 +1,11 @@
+format:
+	code(align:1, logic:0x24,      file:0x24);
+	data(align:4, logic:stack_end, file:code_end);
+
+file:
+    ../tolset/z_tools/hunteros/hunterlibc.lib;
+	../tolset/z_tools/hunteros/golibc.lib;
+
+label:
+	_OsStartup;
+
