@@ -26,6 +26,8 @@ OBJS = $(ROOT)/boot/bootpack.obj \
 	   $(ROOT)/cpu/dsctbl.obj \
 	   $(ROOT)/cpu/irq.obj \
 	   $(ROOT)/system/fifo.obj \
+	   $(ROOT)/drivers/input/keyboard.obj \
+	   $(ROOT)/drivers/input/mouse.obj \
 
 #NASK to OBJ
 OBJ_BS = $(ROOT)/nask/cpu/cpu.obj \
@@ -39,8 +41,9 @@ OBJ_FONT = $(ROOT)/font/hankaku.obj \
 INCLUDES = \
 -I$(INCPATH) \
 -I$(ROOT)/includes/cpu/x86	\
--I$(ROOT)/graphics/	\
+-I$(ROOT)/graphics \
 -I$(ROOT)/includes \
+-I$(ROOT)/drivers \
 
 CC_ARGS	= \
 -Os	\

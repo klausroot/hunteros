@@ -1,5 +1,6 @@
 #ifndef _CPU_IRQ_H_
 #define _CPU_IRQ_H_
+#include "asm/cpu.h"
 
 #define PIC0_ICW1   0x0020 // initial control word
 #define PIC0_OCW2   0x0020

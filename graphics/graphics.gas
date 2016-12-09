@@ -1,0 +1,561 @@
+	.file	"graphics.c"
+	.text
+	.balign 2
+	.def	_init_screen_info;	.scl	3;	.type	32;	.endef
+_init_screen_info:
+	pushl	%ebp
+	movl	%esp, %ebp
+	movl	8(%ebp), %eax
+	movl	%eax, _vram_addr
+	movl	12(%ebp), %eax
+	popl	%ebp
+	movl	%eax, _scrn_xsize
+	ret
+	.balign 2
+	.def	_get_vram_addr;	.scl	3;	.type	32;	.endef
+_get_vram_addr:
+	pushl	%ebp
+	movl	_vram_addr, %eax
+	movl	%esp, %ebp
+	popl	%ebp
+	ret
+	.balign 2
+	.def	_get_screen_width;	.scl	3;	.type	32;	.endef
+_get_screen_width:
+	pushl	%ebp
+	movl	_scrn_xsize, %eax
+	movl	%esp, %ebp
+	popl	%ebp
+	ret
+	.balign 2
+.globl _init_screen
+	.def	_init_screen;	.scl	2;	.type	32;	.endef
+_init_screen:
+	pushl	%ebp
+	movl	%esp, %ebp
+	pushl	%edi
+	pushl	%esi
+	pushl	%ebx
+	subl	$12, %esp
+	pushl	12(%ebp)
+	pushl	8(%ebp)
+	call	_init_screen_info
+	movl	12(%ebp), %ebx
+	movl	16(%ebp), %eax
+	decl	%ebx
+	subl	$29, %eax
+	pushl	%eax
+	pushl	%ebx
+	pushl	$0
+	pushl	$0
+	pushl	$14
+	call	_box_fill
+	movl	16(%ebp), %eax
+	subl	$28, %eax
+	pushl	%eax
+	pushl	%ebx
+	pushl	%eax
+	pushl	$0
+	pushl	$8
+	call	_box_fill
+	movl	16(%ebp), %eax
+	addl	$48, %esp
+	subl	$27, %eax
+	pushl	%eax
+	pushl	%ebx
+	pushl	%eax
+	pushl	$0
+	pushl	$7
+	call	_box_fill
+	movl	16(%ebp), %eax
+	decl	%eax
+	pushl	%eax
+	movl	16(%ebp), %eax
+	pushl	%ebx
+	subl	$26, %eax
+	pushl	%eax
+	pushl	$0
+	pushl	$8
+	call	_box_fill
+	movl	16(%ebp), %eax
+	addl	$40, %esp
+	subl	$24, %eax
+	movl	%eax, -16(%ebp)
+	pushl	%eax
+	pushl	$59
+	pushl	%eax
+	pushl	$3
+	pushl	$7
+	call	_box_fill
+	movl	16(%ebp), %edi
+	subl	$4, %edi
+	pushl	%edi
+	pushl	$2
+	pushl	-16(%ebp)
+	pushl	$2
+	pushl	$7
+	call	_box_fill
+	addl	$40, %esp
+	pushl	%edi
+	pushl	$59
+	pushl	%edi
+	pushl	$3
+	pushl	$15
+	call	_box_fill
+	movl	16(%ebp), %eax
+	pushl	%edi
+	subl	$23, %eax
+	pushl	$59
+	movl	%eax, -20(%ebp)
+	pushl	%eax
+	pushl	$59
+	pushl	$15
+	call	_box_fill
+	movl	16(%ebp), %eax
+	addl	$40, %esp
+	subl	$3, %eax
+	movl	%eax, -24(%ebp)
+	pushl	%eax
+	pushl	$60
+	pushl	-16(%ebp)
+	pushl	$60
+	pushl	$0
+	call	_box_fill
+	pushl	-24(%ebp)
+	pushl	$59
+	pushl	-24(%ebp)
+	pushl	$2
+	pushl	$0
+	call	_box_fill
+	movl	12(%ebp), %ebx
+	addl	$40, %esp
+	movl	12(%ebp), %esi
+	pushl	-16(%ebp)
+	subl	$4, %esi
+	subl	$47, %ebx
+	pushl	%esi
+	pushl	-16(%ebp)
+	pushl	%ebx
+	pushl	$15
+	call	_box_fill
+	pushl	%edi
+	pushl	%ebx
+	pushl	-20(%ebp)
+	pushl	%ebx
+	pushl	$15
+	call	_box_fill
+	addl	$40, %esp
+	pushl	-24(%ebp)
+	pushl	%esi
+	pushl	-24(%ebp)
+	pushl	%ebx
+	pushl	$7
+	call	_box_fill
+	movl	12(%ebp), %eax
+	pushl	-24(%ebp)
+	subl	$3, %eax
+	pushl	%eax
+	pushl	-16(%ebp)
+	pushl	%eax
+	pushl	$7
+	call	_box_fill
+	leal	-12(%ebp), %esp
+	popl	%ebx
+	popl	%esi
+	popl	%edi
+	popl	%ebp
+	ret
+	.balign 2
+.globl _box_fill
+	.def	_box_fill;	.scl	2;	.type	32;	.endef
+_box_fill:
+	pushl	%ebp
+	movl	%esp, %ebp
+	pushl	%edi
+	pushl	%esi
+	pushl	%ebx
+	subl	$12, %esp
+	movb	8(%ebp), %al
+	movb	%al, -13(%ebp)
+	call	_get_vram_addr
+	movl	%eax, -24(%ebp)
+	call	_get_screen_width
+	movl	16(%ebp), %ecx
+	movl	%eax, %esi
+	cmpl	24(%ebp), %ecx
+	jg	L17
+	movl	%ecx, %ebx
+	imull	%eax, %ebx
+L15:
+	movl	12(%ebp), %edx
+	cmpl	20(%ebp), %edx
+	jg	L19
+	movl	-24(%ebp), %edi
+	leal	(%edi,%ebx), %eax
+	leal	(%eax,%edx), %eax
+	movl	%eax, -20(%ebp)
+L14:
+	movl	-20(%ebp), %edi
+	movb	-13(%ebp), %al
+	incl	%edx
+	movb	%al, (%edi)
+	incl	%edi
+	movl	%edi, -20(%ebp)
+	cmpl	20(%ebp), %edx
+	jle	L14
+L19:
+	incl	%ecx
+	addl	%esi, %ebx
+	cmpl	24(%ebp), %ecx
+	jle	L15
+L17:
+	addl	$12, %esp
+	xorl	%eax, %eax
+	popl	%ebx
+	popl	%esi
+	popl	%edi
+	popl	%ebp
+	ret
+	.data
+_color_tbl:
+	.long	0
+	.long	16711680
+	.long	65280
+	.long	16776960
+	.long	255
+	.long	16711935
+	.long	65535
+	.long	16777215
+	.long	13027014
+	.long	8650752
+	.long	33792
+	.long	8684544
+	.long	132
+	.long	8650884
+	.long	33924
+	.long	8684676
+	.text
+	.balign 2
+.globl _init_palette
+	.def	_init_palette;	.scl	2;	.type	32;	.endef
+_init_palette:
+	pushl	%ebp
+	movl	%esp, %ebp
+	pushl	$_color_tbl
+	pushl	$15
+	pushl	$0
+	call	_set_palette
+	leave
+	ret
+	.balign 2
+	.def	_set_palette;	.scl	3;	.type	32;	.endef
+_set_palette:
+	pushl	%ebp
+	movl	%esp, %ebp
+	pushl	%edi
+	pushl	%esi
+	pushl	%ebx
+	movl	8(%ebp), %ebx
+	movl	12(%ebp), %edi
+	movl	16(%ebp), %esi
+	call	_cpu_irq_disable
+	movzbl	%bl, %eax
+	pushl	%eax
+	pushl	$968
+	call	_outb
+	cmpl	%edi, %ebx
+	popl	%eax
+	popl	%edx
+	jle	L26
+L28:
+	leal	-12(%ebp), %esp
+	popl	%ebx
+	popl	%esi
+	popl	%edi
+	popl	%ebp
+	jmp	_cpu_irq_enable
+L26:
+	movb	2(%esi,%ebx,4), %al
+	shrb	$2, %al
+	movzbl	%al, %eax
+	pushl	%eax
+	pushl	$969
+	call	_outb
+	movl	(%esi,%ebx,4), %eax
+	shrl	$10, %eax
+	andl	$63, %eax
+	pushl	%eax
+	pushl	$969
+	call	_outb
+	movb	(%esi,%ebx,4), %al
+	shrb	$2, %al
+	incl	%ebx
+	movzbl	%al, %eax
+	pushl	%eax
+	pushl	$969
+	call	_outb
+	addl	$24, %esp
+	cmpl	%edi, %ebx
+	jle	L26
+	jmp	L28
+	.balign 2
+.globl _draw_font8
+	.def	_draw_font8;	.scl	2;	.type	32;	.endef
+_draw_font8:
+	pushl	%ebp
+	movl	%esp, %ebp
+	pushl	%edi
+	pushl	%esi
+	xorl	%esi, %esi
+	pushl	%ebx
+	pushl	%ebx
+	movb	16(%ebp), %bl
+	call	_get_vram_addr
+	movl	%eax, -16(%ebp)
+	call	_get_screen_width
+	movl	%eax, %edi
+L42:
+	movl	12(%ebp), %eax
+	movl	8(%ebp), %edx
+	addl	%esi, %eax
+	imull	%edi, %eax
+	addl	-16(%ebp), %eax
+	leal	(%edx,%eax), %ecx
+	movl	20(%ebp), %eax
+	movb	(%esi,%eax), %dl
+	testb	%dl, %dl
+	jns	L34
+	movb	%bl, (%ecx)
+L34:
+	movb	%dl, %al
+	andl	$64, %eax
+	testb	%al, %al
+	je	L35
+	movb	%bl, 1(%ecx)
+L35:
+	movb	%dl, %al
+	andl	$32, %eax
+	testb	%al, %al
+	je	L36
+	movb	%bl, 2(%ecx)
+L36:
+	movb	%dl, %al
+	andl	$16, %eax
+	testb	%al, %al
+	je	L37
+	movb	%bl, 3(%ecx)
+L37:
+	movb	%dl, %al
+	andl	$8, %eax
+	testb	%al, %al
+	je	L38
+	movb	%bl, 4(%ecx)
+L38:
+	movb	%dl, %al
+	andl	$4, %eax
+	testb	%al, %al
+	je	L39
+	movb	%bl, 5(%ecx)
+L39:
+	movb	%dl, %al
+	andl	$2, %eax
+	testb	%al, %al
+	je	L40
+	movb	%bl, 6(%ecx)
+L40:
+	andl	$1, %edx
+	testb	%dl, %dl
+	je	L32
+	movb	%bl, 7(%ecx)
+L32:
+	incl	%esi
+	cmpl	$15, %esi
+	jle	L42
+	popl	%ecx
+	popl	%ebx
+	popl	%esi
+	popl	%edi
+	popl	%ebp
+	ret
+	.balign 2
+.globl _draw_ascii_font8
+	.def	_draw_ascii_font8;	.scl	2;	.type	32;	.endef
+_draw_ascii_font8:
+	pushl	%ebp
+	movl	%esp, %ebp
+	pushl	%edi
+	pushl	%esi
+	pushl	%ebx
+	pushl	%esi
+	movb	16(%ebp), %al
+	movl	20(%ebp), %edx
+	movb	%al, -13(%ebp)
+	movl	12(%ebp), %edi
+	orl	$-1, %eax
+	movl	8(%ebp), %esi
+	testl	%edx, %edx
+	je	L45
+	movl	%edx, %ebx
+	cmpb	$0, (%edx)
+	jne	L51
+L53:
+	xorl	%eax, %eax
+L45:
+	leal	-12(%ebp), %esp
+	popl	%ebx
+	popl	%esi
+	popl	%edi
+	popl	%ebp
+	ret
+L51:
+	movsbl	(%ebx),%eax
+	sall	$4, %eax
+	incl	%ebx
+	addl	$_hankaku, %eax
+	pushl	%eax
+	movzbl	-13(%ebp), %eax
+	pushl	%eax
+	pushl	%edi
+	pushl	%esi
+	addl	$8, %esi
+	call	_draw_font8
+	addl	$16, %esp
+	cmpb	$0, (%ebx)
+	jne	L51
+	jmp	L53
+	.data
+_cursor:
+	.ascii "**************.."
+	.ascii "*OOOOOOOOOOO*..."
+	.ascii "*OOOOOOOOOO*...."
+	.ascii "*OOOOOOOOO*....."
+	.ascii "*OOOOOOOO*......"
+	.ascii "*OOOOOOO*......."
+	.ascii "*OOOOOOO*......."
+	.ascii "*OOOOOOOO*......"
+	.ascii "*OOOO**OOO*....."
+	.ascii "*OOO*..*OOO*...."
+	.ascii "*oo*....*OOO*..."
+	.ascii "*o*......*OOO*.."
+	.ascii "**........*OOO*."
+	.ascii "*..........*OOO*"
+	.ascii "............*OO*"
+	.ascii ".............***"
+	.text
+	.balign 2
+.globl _init_mouse_cursor8
+	.def	_init_mouse_cursor8;	.scl	2;	.type	32;	.endef
+_init_mouse_cursor8:
+	pushl	%ebp
+	xorl	%ecx, %ecx
+	movl	%esp, %ebp
+	pushl	%edi
+	xorl	%edi, %edi
+	pushl	%esi
+	xorl	%esi, %esi
+	pushl	%ebx
+	pushl	%eax
+	movb	12(%ebp), %al
+	movl	8(%ebp), %ebx
+	movb	%al, -13(%ebp)
+L66:
+	leal	(%esi,%edi), %eax
+	cmpb	$42, _cursor(%eax)
+	je	L72
+L63:
+	cmpb	$79, _cursor(%eax)
+	je	L73
+L64:
+	cmpb	$46, _cursor(%eax)
+	je	L74
+L61:
+	incl	%esi
+	cmpl	$15, %esi
+	jle	L66
+	incl	%ecx
+	addl	$16, %edi
+	cmpl	$15, %ecx
+	jg	L75
+	xorl	%esi, %esi
+	jmp	L66
+L75:
+	popl	%edi
+	popl	%ebx
+	popl	%esi
+	popl	%edi
+	popl	%ebp
+	ret
+L74:
+	movb	-13(%ebp), %dl
+	movb	%dl, (%eax,%ebx)
+	jmp	L61
+L73:
+	movb	$7, (%eax,%ebx)
+	jmp	L64
+L72:
+	movb	$0, (%eax,%ebx)
+	jmp	L63
+	.balign 2
+.globl _draw_block8_8
+	.def	_draw_block8_8;	.scl	2;	.type	32;	.endef
+_draw_block8_8:
+	pushl	%ebp
+	movl	%esp, %ebp
+	pushl	%edi
+	pushl	%esi
+	xorl	%esi, %esi
+	pushl	%ebx
+	subl	$20, %esp
+	call	_get_vram_addr
+	movl	%eax, -16(%ebp)
+	call	_get_screen_width
+	cmpl	12(%ebp), %esi
+	movl	%eax, -20(%ebp)
+	jge	L88
+	xorl	%edi, %edi
+L86:
+	xorl	%ebx, %ebx
+	cmpl	8(%ebp), %ebx
+	jge	L90
+	movl	24(%ebp), %eax
+	addl	%edi, %eax
+	movl	%eax, -28(%ebp)
+L85:
+	movl	20(%ebp), %eax
+	movl	16(%ebp), %edx
+	addl	%esi, %eax
+	addl	%ebx, %edx
+	imull	-20(%ebp), %eax
+	addl	%edx, %eax
+	movl	-16(%ebp), %ecx
+	movl	-28(%ebp), %edx
+	incl	%ebx
+	movb	(%edx), %dl
+	movb	%dl, (%eax,%ecx)
+	incl	-28(%ebp)
+	cmpl	8(%ebp), %ebx
+	jl	L85
+L90:
+	incl	%esi
+	addl	28(%ebp), %edi
+	cmpl	12(%ebp), %esi
+	jl	L86
+L88:
+	addl	$20, %esp
+	popl	%ebx
+	popl	%esi
+	popl	%edi
+	popl	%ebp
+	ret
+	.data
+	.balign 4
+_vram_addr:
+	.space 4
+	.data
+	.balign 4
+_scrn_xsize:
+	.space 4
+	.def	_cpu_irq_enable;	.scl	2;	.type	32;	.endef
+	.def	_outb;	.scl	2;	.type	32;	.endef
+	.def	_cpu_irq_disable;	.scl	2;	.type	32;	.endef
+	.def	_box_fill;	.scl	2;	.type	32;	.endef

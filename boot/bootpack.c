@@ -4,6 +4,8 @@
 #include "stdio.h"
 #include "irq.h"
 #include "system/fifo.h"
+#include "input/keyboard.h"
+#include "input/mouse.h"
 
 struct boot_info{
     unsigned char   cyls;
@@ -24,7 +26,8 @@ void os_entry(void)
     struct boot_info *binfo;
     char var[64];
     unsigned char mouse_cursor[16*16];
-    char data;
+    int data;
+    int mx, my;
 
     binfo =  (struct boot_info *)BOOT_INFO;
 
@@ -37,21 +40,27 @@ void os_entry(void)
     init_screen(binfo->vram, binfo->scrn_x, binfo->scrn_y);
 
     //draw_font8(binfo->vram, binfo->scrn_x, 3, 3, COLOR_WHITE, font_A);
-    draw_ascii_font8(5, 35, COLOR_WHITE, "Hunter OS -- V1.0");
-    draw_ascii_font8(5, 54, COLOR_WHITE, "-- Create by lichao.");
+    draw_ascii_font8(5, 48, COLOR_WHITE, "Hunter OS -- V1.0");
+    draw_ascii_font8(5, 64, COLOR_WHITE, "-- Create by lichao.");
 
     sprintf(var, "Screen size : %d x %d.", binfo->scrn_x, binfo->scrn_y);
 
-    draw_ascii_font8(5, 73, COLOR_WHITE, var);
+    draw_ascii_font8(5, 80, COLOR_WHITE, var);
 
+    outb(PIC0_IMR, 0xf9); /*开放PIC1和键盘中断（11111001)*/
+    outb(PIC1_IMR, 0xef); /*开放鼠标中断(11101111)*/
 
     init_mouse_cursor8(mouse_cursor, COLOR_DARK_LI_BLUE);
 
-    draw_block8_8(16, 16, 150, 152, mouse_cursor, 16);
+    mx = (binfo->scrn_x - 16) / 2; //计算画面中心坐标
+    my = (binfo->scrn_y - 28 - 16) / 2;
+
+    draw_block8_8(16, 16, mx, my, mouse_cursor, 16);
     
-    outb(PIC0_IMR, 0xf9);
-    outb(PIC1_IMR, 0xef);
-    
+    init_keyboard();
+    init_mouse();
+
+    struct mouse_pos mpos;
     register_fifo(&keyboard_fifo, "keyboard");
     register_fifo(&mouse_fifo, "mouse");
     while(1){
@@ -60,12 +69,59 @@ void os_entry(void)
     		io_stihlt();
     	}else {
     		if (fifo_status("keyboard")){
+//    			box_fill(COLOR_BRIGHT_LI_BLUE, 0, 32, 360, 48);
+//    			sprintf(s, "enter -- %d : %s %02x %02x %02x %02x %02x %02x %02x %02x.", i++, keyboard_fifo.fname,
+//    					keyboard_fifo.b_data[0], keyboard_fifo.b_data[1], keyboard_fifo.b_data[2], keyboard_fifo.b_data[3],
+//    					keyboard_fifo.b_data[4], keyboard_fifo.b_data[5], keyboard_fifo.b_data[6], keyboard_fifo.b_data[7]);
+//    			draw_ascii_font8(0, 32, COLOR_WHITE, s);
     			data = get_bdata_fifo("keyboard");
     			io_sti();
     			sprintf(var, "%02x", data);
-    			box_fill(COLOR_BRIGHT_LI_BLUE, 0, 16, 15, 32);
+    			box_fill(COLOR_DARK_LI_BLUE, 0, 16, 15, 31);
     			draw_ascii_font8(0, 16, COLOR_WHITE, var);
-    		}
+    		}else if (fifo_status("mouse")){
+    			data = get_bdata_fifo("mouse");
+    			io_sti();
+
+    			if (mouse_decode(&mpos, data)){
+    				//显示坐标
+					sprintf(var, "[lrc %4d %4d]", mpos.x, mpos.y);
+					if (mpos.btn & 0x01){
+						var[1] = 'L';
+					}
+					if (mpos.btn & 0x02){
+						var[2] = 'R';
+					}
+					if (mpos.btn & 0x04){
+						var[3] = 'C';
+					}
+	    			box_fill(COLOR_DARK_LI_BLUE, 32, 16, 32 + 15 * 8 - 1, 31);
+	    			draw_ascii_font8(32, 16, COLOR_WHITE, var);
+	    			//鼠标指针移动
+	    			box_fill(COLOR_DARK_LI_BLUE, mx, my, mx + 15, my + 15);
+	    			mx += mpos.x;
+	    			my += mpos.y;
+	    			if (mx < 0){
+	    				mx = 0;
+	    			}
+	    			if (my < 0){
+	    				my = 0;
+	    			}
+	    			if (mx > (binfo->scrn_x - 16)){
+	    				mx = binfo->scrn_x - 16;
+	    			}
+	    			if (my > (binfo->scrn_y - 16)){
+	    				my = binfo->scrn_y - 16;
+	    			}
+	    			sprintf(var, "(%3d, %3d)", mx, my);
+	    			box_fill(COLOR_DARK_LI_BLUE, 0, 0, 79, 15); //隐藏坐标
+	    			draw_ascii_font8(0, 0, COLOR_WHITE, var); //显示坐标
+	    			draw_block8_8(16, 16, mx, my, mouse_cursor, 16);//画鼠标
+    			}
+//    			sprintf(var, "%02x", data);
+//    			box_fill(COLOR_DARK_LI_BLUE, 32, 96, 47, 111);
+//    			draw_ascii_font8(32, 96, COLOR_WHITE, var);
+        	}
     	}
     }
 
@@ -76,10 +132,3 @@ void os_entry(void)
 }
 
 
-/*
-int dvb_s2_main(void)
-{
-    struct TS_PAT *PAT_
-
-}
-*/

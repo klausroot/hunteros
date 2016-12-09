@@ -1,0 +1,109 @@
+	.file	"irq.c"
+	.text
+	.balign 2
+.globl _init_pic
+	.def	_init_pic;	.scl	2;	.type	32;	.endef
+_init_pic:
+	pushl	%ebp
+	movl	%esp, %ebp
+	pushl	$255
+	pushl	$33
+	call	_outb
+	pushl	$255
+	pushl	$161
+	call	_outb
+	pushl	$17
+	pushl	$32
+	call	_outb
+	pushl	$32
+	pushl	$33
+	call	_outb
+	addl	$32, %esp
+	pushl	$4
+	pushl	$33
+	call	_outb
+	pushl	$1
+	pushl	$33
+	call	_outb
+	pushl	$17
+	pushl	$160
+	call	_outb
+	pushl	$40
+	pushl	$161
+	call	_outb
+	addl	$32, %esp
+	pushl	$2
+	pushl	$161
+	call	_outb
+	pushl	$1
+	pushl	$161
+	call	_outb
+	pushl	$251
+	pushl	$33
+	call	_outb
+	pushl	$255
+	pushl	$161
+	call	_outb
+	addl	$32, %esp
+	leave
+	jmp	_io_sti
+	.data
+LC0:
+	.ascii "keyboard\0"
+	.text
+	.balign 2
+.globl _irq_handler1
+	.def	_irq_handler1;	.scl	2;	.type	32;	.endef
+_irq_handler1:
+	pushl	%ebp
+	movl	%esp, %ebp
+	pushl	$97
+	pushl	$32
+	call	_outb
+	pushl	$96
+	call	_inb
+	pushl	$LC0
+	movzbl	%al, %eax
+	pushl	%eax
+	call	_put_bdata_fifo
+	leave
+	ret
+	.data
+LC1:
+	.ascii "mouse\0"
+	.text
+	.balign 2
+.globl _irq_handler12
+	.def	_irq_handler12;	.scl	2;	.type	32;	.endef
+_irq_handler12:
+	pushl	%ebp
+	movl	%esp, %ebp
+	pushl	$100
+	pushl	$160
+	call	_outb
+	pushl	$98
+	pushl	$32
+	call	_outb
+	pushl	$96
+	call	_inb
+	pushl	$LC1
+	movzbl	%al, %eax
+	pushl	%eax
+	call	_put_bdata_fifo
+	leave
+	ret
+	.balign 2
+.globl _irq_handler7
+	.def	_irq_handler7;	.scl	2;	.type	32;	.endef
+_irq_handler7:
+	pushl	%ebp
+	movl	%esp, %ebp
+	pushl	$103
+	pushl	$32
+	call	_outb
+	leave
+	ret
+	.def	_put_bdata_fifo;	.scl	2;	.type	32;	.endef
+	.def	_inb;	.scl	2;	.type	32;	.endef
+	.def	_io_sti;	.scl	2;	.type	32;	.endef
+	.def	_outb;	.scl	2;	.type	32;	.endef

@@ -1,0 +1,42 @@
+	.file	"keyboard.c"
+	.text
+	.balign 2
+.globl _irq_handler_keyboard
+	.def	_irq_handler_keyboard;	.scl	2;	.type	32;	.endef
+_irq_handler_keyboard:
+	pushl	%ebp
+	movl	%esp, %ebp
+	popl	%ebp
+	ret
+	.balign 2
+.globl _wait_KBC_sendready
+	.def	_wait_KBC_sendready;	.scl	2;	.type	32;	.endef
+_wait_KBC_sendready:
+	pushl	%ebp
+	movl	%esp, %ebp
+L3:
+	pushl	$100
+	call	_inb
+	popl	%edx
+	andl	$2, %eax
+	jne	L3
+	leave
+	ret
+	.balign 2
+.globl _init_keyboard
+	.def	_init_keyboard;	.scl	2;	.type	32;	.endef
+_init_keyboard:
+	pushl	%ebp
+	movl	%esp, %ebp
+	call	_wait_KBC_sendready
+	pushl	$96
+	pushl	$100
+	call	_outb
+	call	_wait_KBC_sendready
+	pushl	$71
+	pushl	$96
+	call	_outb
+	leave
+	ret
+	.def	_outb;	.scl	2;	.type	32;	.endef
+	.def	_inb;	.scl	2;	.type	32;	.endef

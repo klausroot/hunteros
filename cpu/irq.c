@@ -1,6 +1,7 @@
 #include "irq.h"
-#include "asm/cpu.h"
 #include "graphics.h"
+#include "stdio.h"
+#include "system/fifo.h"
 
 
 void init_pic(void)
@@ -32,23 +33,30 @@ struct key_buf{
 #define PORT_KEYDAT		0x0060
 void irq_handler1(int *esp)
 {
-	unsigned char data, s[4];
+	unsigned char data;// s[4];
 	outb(PIC0_OCW2, 0x61); //通知PIC IRQ-01已经受理完毕
 
 	data = inb(PORT_KEYDAT);
 //	sprintf(s, "%02x", data);
 //    box_fill(COLOR_BLACK, 0, 0, 32 * 8 - 1, 15);
-//    draw_ascii_font8(0, 16, COLOR_WHITE, s);
+//    draw_ascii_font8(0, 0, COLOR_WHITE, s);
 	put_bdata_fifo(data, "keyboard");
     //draw_ascii_font8(0, 0, COLOR_WHITE, "INT 21 (IRQ-1) : PS/2 keyboard");
 }
 
 void irq_handler12(int *esp)
 {
-    outb(PIC1_OCW2, 0x64);
-    outb(PIC0_OCW2, 0x62);
-    box_fill(COLOR_BLACK, 0, 0, 32 * 8 - 1, 15);
-    draw_ascii_font8(0, 0, COLOR_WHITE, "INT 2C (IRQ-12) : PS/2 mouse");
+	unsigned char data;// s[8];
+
+    outb(PIC1_OCW2, 0x64); //通知PIC IRQ-12已经受理完毕
+    outb(PIC0_OCW2, 0x62); //通知PIC IRQ-02已经受理完毕
+    data = inb(PORT_KEYDAT);
+//	sprintf(s, "%02x", data);
+//    box_fill(COLOR_BLACK, 32, 16, 32 * 8 - 1, 31);
+//    draw_ascii_font8(32, 16, COLOR_WHITE, s);
+    put_bdata_fifo(data, "mouse");
+//    box_fill(COLOR_BLACK, 0, 0, 32 * 8 - 1, 15);
+//    draw_ascii_font8(0, 0, COLOR_WHITE, "INT 2C (IRQ-12) : PS/2 mouse");
 }
 
 /*************************************************
@@ -64,3 +72,4 @@ void irq_handler7(int *esp)
 {
 	outb(PIC0_OCW2, 0x67); //通知PIC的IRQ-07(参考7-1)
 }
+

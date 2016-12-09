@@ -7,8 +7,6 @@
 	EXTERN	_io_sti
 	EXTERN	_inb
 	EXTERN	_put_bdata_fifo
-	EXTERN	_box_fill
-	EXTERN	_draw_ascii_font8
 [FILE "irq.c"]
 [SECTION .text]
 	GLOBAL	_init_pic
@@ -77,7 +75,7 @@ _irq_handler1:
 	RET
 [SECTION .data]
 LC1:
-	DB	"INT 2C (IRQ-12) : PS/2 mouse",0x00
+	DB	"mouse",0x00
 [SECTION .text]
 	GLOBAL	_irq_handler12
 _irq_handler12:
@@ -89,18 +87,12 @@ _irq_handler12:
 	PUSH	98
 	PUSH	32
 	CALL	_outb
-	PUSH	15
-	PUSH	255
-	PUSH	0
-	PUSH	0
-	PUSH	0
-	CALL	_box_fill
-	ADD	ESP,36
+	PUSH	96
+	CALL	_inb
 	PUSH	LC1
-	PUSH	7
-	PUSH	0
-	PUSH	0
-	CALL	_draw_ascii_font8
+	MOVZX	EAX,AL
+	PUSH	EAX
+	CALL	_put_bdata_fifo
 	LEAVE
 	RET
 	GLOBAL	_irq_handler7

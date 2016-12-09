@@ -1,0 +1,145 @@
+     1 00000000                                 ;nask function
+     2 00000000                                 
+     3 00000000                                 ;TAB=4
+     4 00000000                                 
+     5 00000000                                 
+     6 00000000                                 [FORMAT "WCOFF"]    ;制作目标文件的模式
+     7 00000000                                 [INSTRSET "i486p"]  ;使用i486为止的指令
+     8 00000000                                 [BITS 32]           ;制作32位机器语言
+     9 00000000                                 
+    10 00000000                                 ;制作目标文件的信息
+    11 00000000                                 
+    12 00000000                                 [FILE "naskcpu.nas"]    ;文件名
+    13 00000000                                 
+    14 00000000                                         GLOBAL  _cpu_hlt, _io_stihlt ;
+    15 00000000                                         GLOBAL  _write_mem_8bits   ;程序中包含的函数名
+    16 00000000                                         GLOBAL  _cpu_irq_disable, _cpu_irq_enable
+    17 00000000                                         GLOBAL  _outb, _inb
+    18 00000000                                         GLOBAL  _load_gdtr, _load_idtr ;设置段描述表和中断描述表
+    19 00000000                                 
+    20 00000000                                         GLOBAL  _io_cli, _io_sti, _io_load_eflags, _io_store_eflags     ;开关中断函数集
+    21 00000000                                         GLOBAL  _asm_irq_handler1, _asm_irq_handler7, _asm_irq_handler12
+    22 00000000                                         EXTERN  _irq_handler1, _irq_handler7, _irq_handler12        
+    23 00000000                                 
+    24 00000000                                 ;实际函数
+    25 00000000                                 
+    26                                          [SECTION .text]     ;放入text段
+    27 00000000                                 
+    28 00000000                                 _cpu_hlt: ;void cpu_hlt(void)
+    29 00000000 F4                                      HLT
+    30 00000001 C3                                      RET
+    31 00000002                                         
+    32 00000002                                 _io_stihlt:	; void io_stihlt(void);
+    33 00000002 FB                              		STI
+    34 00000003 F4                              		HLT
+    35 00000004 C3                              		RET
+    36 00000005                                 		
+    37 00000005                                 _write_mem_8bits:      ;void write_mem_8bits(int addr, int val)
+    38 00000005 8B 4C 24 04                             MOV     ECX,[ESP+4]
+    39 00000009 8A 44 24 08                             MOV     AL,[ESP+8]
+    40 0000000D 88 01                                   MOV     [ECX],AL
+    41 0000000F C3                                      RET
+    42 00000010                                 _outb:
+    43 00000010 8B 54 24 04                             MOV     EDX,[ESP+4]
+    44 00000014 8A 44 24 08                             MOV     AL,[ESP+8]
+    45 00000018 EE                                      OUT     DX,AL
+    46 00000019 C3                                      RET
+    47 0000001A                                 _inb:
+    48 0000001A 8B 54 24 04                     		MOV		EDX,[ESP+4]
+    49 0000001E B8 00000000                     		MOV		EAX,0
+    50 00000023 EC                              		IN		AL,DX
+    51 00000024 C3                              		RET
+    52 00000025                                 _cpu_irq_disable:
+    53 00000025 9C                                      PUSHFD  
+    54 00000026 58                                      POP     EAX
+    55 00000027 A3 [00000000]                           MOV     DWORD [_cpu_sr],EAX
+    56 0000002C FA                                      CLI
+    57 0000002D C3                                      RET
+    58 0000002E                                 _cpu_irq_enable:
+    59 0000002E A1 [00000000]                           MOV     EAX,[_cpu_sr]
+    60 00000033 50                                      PUSH    EAX
+    61 00000034 9D                                      POPFD
+    62 00000035 C3                                      RET
+    63 00000036                                 
+    64 00000036                                 
+    65 00000036                                 _io_cli:
+    66 00000036 FA                                      CLI
+    67 00000037 C3                                      RET
+    68 00000038                                 _io_sti:
+    69 00000038 FB                                      STI
+    70 00000039 C3                                      RET
+    71 0000003A                                         
+    72 0000003A                                 _io_load_eflags:
+    73 0000003A 9C                                      PUSHFD
+    74 0000003B 58                                      POP     EAX
+    75 0000003C C3                                      RET
+    76 0000003D                                 _io_store_eflags:
+    77 0000003D 8B 44 24 04                             MOV     EAX,[ESP+4]
+    78 00000041 50                                      PUSH    EAX
+    79 00000042 9D                                      POPFD
+    80 00000043 C3                                      RET
+    81 00000044                                 
+    82 00000044                                 _load_gdtr:     ;void load_gdtr(int limit, int addr)
+    83 00000044 66 8B 44 24 04                          MOV     AX,[ESP+4]
+    84 00000049 66 89 44 24 06                          MOV     [ESP+6],AX
+    85 0000004E 0F 01 54 24 06                          LGDT    [ESP+6]
+    86 00000053 C3                                      RET
+    87 00000054                                 _load_idtr:     ;void load_idtr(int limit, int addr)
+    88 00000054 66 8B 44 24 04                          MOV     AX,[ESP+4]
+    89 00000059 66 89 44 24 06                          MOV     [ESP+6],AX
+    90 0000005E 0F 01 5C 24 06                          LIDT    [ESP+6]
+    91 00000063 C3                                      RET
+    92 00000064                                 
+    93 00000064                                 _asm_irq_handler1:
+    94 00000064 06                                      PUSH    ES
+    95 00000065 1E                                      PUSH    DS
+    96 00000066 60                                      PUSHAD
+    97 00000067 89 E0                                   MOV     EAX,ESP
+    98 00000069 50                                      PUSH    EAX
+    99 0000006A 66 8C D0                                MOV     AX,SS
+   100 0000006D 8E D8                                   MOV     DS,AX
+   101 0000006F 8E C0                                   MOV     ES,AX
+   102 00000071 E8 [00000000]                           CALL    _irq_handler1
+   103 00000076 58                                      POP     EAX
+   104 00000077 61                                      POPAD
+   105 00000078 1F                                      POP     DS
+   106 00000079 07                                      POP     ES
+   107 0000007A CF                                      IRETD
+   108 0000007B                                 
+   109 0000007B                                 _asm_irq_handler7:
+   110 0000007B 06                                      PUSH    ES
+   111 0000007C 1E                                      PUSH    DS
+   112 0000007D 60                                      PUSHAD
+   113 0000007E 89 E0                                   MOV     EAX,ESP
+   114 00000080 50                                      PUSH    EAX
+   115 00000081 66 8C D0                                MOV     AX,SS
+   116 00000084 8E D8                                   MOV     DS,AX
+   117 00000086 8E C0                                   MOV     ES,AX
+   118 00000088 E8 [00000000]                           CALL    _irq_handler7
+   119 0000008D 58                                      POP     EAX
+   120 0000008E 61                                      POPAD
+   121 0000008F 1F                                      POP     DS
+   122 00000090 07                                      POP     ES
+   123 00000091 CF                                      IRETD
+   124 00000092                                 
+   125 00000092                                 _asm_irq_handler12:
+   126 00000092 06                                      PUSH    ES
+   127 00000093 1E                                      PUSH    DS
+   128 00000094 60                                      PUSHAD
+   129 00000095 89 E0                                   MOV     EAX,ESP
+   130 00000097 50                                      PUSH    EAX
+   131 00000098 66 8C D0                                MOV     AX,SS
+   132 0000009B 8E D8                                   MOV     DS,AX
+   133 0000009D 8E C0                                   MOV     ES,AX
+   134 0000009F E8 [00000000]                           CALL    _irq_handler12
+   135 000000A4 58                                      POP     EAX
+   136 000000A5 61                                      POPAD
+   137 000000A6 1F                                      POP     DS
+   138 000000A7 07                                      POP     ES
+   139 000000A8 CF                                      IRETD
+   140 000000A9                                 
+   141 000000A9                                 
+   142                                          [SECTION .data]
+   143 00000000                                         ALIGNB  4
+   144 00000000                                 _cpu_sr:
+   145 00000000 00 00 00 00                             RESB    4
