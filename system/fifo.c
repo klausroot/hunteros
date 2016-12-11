@@ -34,7 +34,6 @@ int get_bdata_fifo(char *name)
 
 	list_for_each_entry(fifo, &fifo_head, entry){
 		if (strcmp(fifo->fname, name) == 0){
-
 			if (fifo->free == fifo->size){
 				//»º³åÇøÎª¿Õ
 				return -1;
@@ -74,6 +73,7 @@ int register_fifo(struct st_fifo *fifo, char *name)
 		}
 		fifo->fname = name;
 		fifo->size = sizeof(fifo->b_data);
+		fifo->free = fifo->size;
 		fifo->next_w = 0;
 		fifo->next_r = 0;
 		fifo->flag = 0;

@@ -6,6 +6,7 @@
 #include "system/fifo.h"
 #include "input/keyboard.h"
 #include "input/mouse.h"
+#include "mm/mem_init.h"
 
 struct boot_info{
     unsigned char   cyls;
@@ -28,12 +29,20 @@ void os_entry(void)
     unsigned char mouse_cursor[16*16];
     int data;
     int mx, my;
+    unsigned int mem_size;
 
     binfo =  (struct boot_info *)BOOT_INFO;
 
     init_gdt_idt(); //初始化gdt/idt
 
     init_pic();
+
+    outb(PIC0_IMR, 0xf9); /*开放PIC1和键盘中断（11111001)*/
+    outb(PIC1_IMR, 0xef); /*开放鼠标中断(11101111)*/
+    init_keyboard();
+    init_mouse();
+
+    mem_size = mem_test(0x00400000, 0xbfffffff) / 1024 / 1024;
 
     init_palette();
 
@@ -47,8 +56,9 @@ void os_entry(void)
 
     draw_ascii_font8(5, 80, COLOR_WHITE, var);
 
-    outb(PIC0_IMR, 0xf9); /*开放PIC1和键盘中断（11111001)*/
-    outb(PIC1_IMR, 0xef); /*开放鼠标中断(11101111)*/
+    sprintf(var, "memory : %dMB", mem_size);
+	box_fill(COLOR_DARK_LI_BLUE, 32, 96, 32 + 15 * 8 - 1, 111);
+	draw_ascii_font8(32, 96, COLOR_WHITE, var);
 
     init_mouse_cursor8(mouse_cursor, COLOR_DARK_LI_BLUE);
 
@@ -57,9 +67,6 @@ void os_entry(void)
 
     draw_block8_8(16, 16, mx, my, mouse_cursor, 16);
     
-    init_keyboard();
-    init_mouse();
-
     struct mouse_pos mpos;
     register_fifo(&keyboard_fifo, "keyboard");
     register_fifo(&mouse_fifo, "mouse");

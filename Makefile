@@ -25,6 +25,7 @@ OBJS = $(ROOT)/boot/bootpack.obj \
 	   $(ROOT)/graphics/graphics.obj \
 	   $(ROOT)/cpu/dsctbl.obj \
 	   $(ROOT)/cpu/irq.obj \
+	   $(ROOT)/cpu/mm/memtest.obj \
 	   $(ROOT)/system/fifo.obj \
 	   $(ROOT)/drivers/input/keyboard.obj \
 	   $(ROOT)/drivers/input/mouse.obj \
@@ -41,6 +42,7 @@ OBJ_FONT = $(ROOT)/font/hankaku.obj \
 INCLUDES = \
 -I$(INCPATH) \
 -I$(ROOT)/includes/cpu/x86	\
+-I$(ROOT)/cpu \
 -I$(ROOT)/graphics \
 -I$(ROOT)/includes \
 -I$(ROOT)/drivers \
@@ -96,9 +98,6 @@ hunteros.img : $(ROOT)/nask/ipl/ipl10.bin hunteros.bin Makefile
 
 # ∆‰À˚÷∏¡Ó
 
-img :
-	$(MAKE) hunteros.img
-
 run :
 	$(MAKE) img
 	$(COPY) hunteros.img ..\tolset\z_tools\qemu\fdimage0.bin
@@ -108,6 +107,8 @@ install :
 	$(MAKE) img
 	$(IMGTOL) w a: hunteros.img
 
+img :
+	$(MAKE) hunteros.img
 #clean :
 #	-$(DEL) *.bin
 #	-$(DEL) *.lst

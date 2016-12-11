@@ -15,7 +15,7 @@ VRAM	EQU		0x0ff8			; 图像缓冲区的起始地址
 
 		ORG		0xc200			;  这个的程序要被装载的内存地址
 
-; 画面モードを設定
+; 画面设置
 
 ;		MOV		AL,0x13			; VGA显卡，320x200x8bit
 ;		MOV		AH,0x00
@@ -76,17 +76,17 @@ pipelineflush:
 
 ; bootpack传递
 
-		MOV		ESI,bootpack	; 源
-		MOV		EDI,BOTPAK		; 目标
+		MOV		ESI,bootpack	; 转送源
+		MOV		EDI,BOTPAK		; 转送目标
 		MOV		ECX,512*1024/4
 		CALL	memcpy
 
-; 传输磁盘数据
+; 磁盘数据最终转送到它本来的位置去
 
-; 从引导区开始
+; 首先从启动扇区开始
 
-		MOV		ESI,0x7c00		; 源
-		MOV		EDI,DSKCAC		; 目标
+		MOV		ESI,0x7c00		; 转送源
+		MOV		EDI,DSKCAC		; 转送目标
 		MOV		ECX,512/4
 		CALL	memcpy
 
@@ -105,8 +105,8 @@ pipelineflush:
 
 ; bootpack启动
 
-		MOV		EBX,BOTPAK
-		MOV		ECX,[EBX+16]
+		MOV		EBX,BOTPAK		
+		MOV		ECX,[EBX+16]	
 		ADD		ECX,3			; ECX += 3;
 		SHR		ECX,2			; ECX /= 4;
 		JZ		skip			; 传输完成
@@ -117,10 +117,21 @@ pipelineflush:
 skip:
 		MOV		ESP,[EBX+12]	; 堆栈的初始化
 		JMP		DWORD 2*8:0x0000001b
+		
+;内存分布图：
+;0x00000000 - 0x000fffff : 虽然启动中会多次使用，单之后就变空。(1MB)
+;0x00100000 - 0x00267fff : 用于保存软盘的内容。(1440KB)
+;0x00268000 - 0x0026f7ff : 空(30K)
+;0x0026f800 - 0x0026ffff : IDT(2K)
+;0x00270000 - 0x0027ffff : GDT(64K)
+;0x00280000 - 0x002fffff : bootpack.hrb (512K)
+;0x00300000 - 0x003fffff : 栈及其他(1MB)
+;0x00400000 - ...		 : 空
 
 waitkbdout:
 		IN		 AL,0x64
 		AND		 AL,0x02
+		IN		 AL,0x60		; 空读（为了清空数据接收缓冲区中的垃圾数据）
 		JNZ		waitkbdout		; AND结果不为0跳转到waitkbdout
 		RET
 

@@ -25,20 +25,18 @@ _init_mouse:
 	GLOBAL	_mouse_decode
 _mouse_decode:
 	PUSH	EBP
-	MOV	EBP,ESP
-	PUSH	EBX
-	SUB	ESP,32
 	MOV	DL,BYTE [_mouse_dec+3]
+	MOV	EBP,ESP
+	TEST	DL,DL
+	PUSH	EBX
 	MOV	ECX,DWORD [8+EBP]
 	MOV	EBX,DWORD [12+EBP]
-	TEST	DL,DL
 	JNE	L3
 	CMP	BL,-6
 	JE	L11
 L5:
 	XOR	EAX,EAX
 L2:
-	ADD	ESP,32
 	POP	EBX
 	POP	EBP
 	RET
@@ -47,13 +45,9 @@ L11:
 	JMP	L5
 L3:
 	MOVZX	EAX,DL
-	CMP	DL,3
+	CMP	DL,2
 	MOV	BYTE [_mouse_dec-1+EAX],BL
-	JE	L12
-	LEA	EAX,DWORD [1+EDX]
-	MOV	BYTE [_mouse_dec+3],AL
-	JMP	L5
-L12:
+	JBE	L6
 	MOV	BYTE [_mouse_dec+3],1
 	TEST	ECX,ECX
 	JE	L5
@@ -81,6 +75,10 @@ L9:
 	NEG	DWORD [4+ECX]
 	MOV	EAX,1
 	JMP	L2
+L6:
+	LEA	EAX,DWORD [1+EDX]
+	MOV	BYTE [_mouse_dec+3],AL
+	JMP	L5
 [SECTION .data]
 	ALIGNB	4
 _mouse_dec:

@@ -27,7 +27,7 @@ void init_mouse(void)
 
 int mouse_decode(struct mouse_pos *mpos, unsigned char data)
 {
-	char var[32];
+	//char var[32];
 	if (mouse_dec.phase == 0){
 		if (data == 0xfa){
 			mouse_dec.phase = 1;//设为鼠标第一个字段读取
@@ -36,7 +36,7 @@ int mouse_decode(struct mouse_pos *mpos, unsigned char data)
 	} else {
 		mouse_dec.buf[mouse_dec.phase - 1] = data;
 		//设置读取下一个字段
-		if (mouse_dec.phase == 3){
+		if (mouse_dec.phase >= 3){
 			mouse_dec.phase = 1;
 			if (mpos){
 				mpos->btn = mouse_dec.buf[0] & 0x7;

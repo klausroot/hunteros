@@ -10,6 +10,12 @@ extern int inb(int port);
 extern void load_gdtr(int limit, int addr);
 extern void load_idtr(int limit, int addr);
 
+extern int load_cr0(void);
+extern void store_cr0(int cr0);
+
+extern unsigned int io_load_eflags(void);
+extern void io_store_eflags(unsigned int eflg);
+
 void asm_irq_handler1(void);
 void asm_irq_handler7(void);
 void asm_irq_handler12(void);
