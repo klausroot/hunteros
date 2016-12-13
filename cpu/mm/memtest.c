@@ -62,7 +62,7 @@ unsigned int mem_test(unsigned int start, unsigned int end)
 
 	if (flg486){
 		cr0 = load_cr0();
-		cr0 &= CR0_CACHE_DISABLE;//打开cache
+		cr0 &= ~CR0_CACHE_DISABLE;//打开cache
 		store_cr0(cr0);
 	}
 	return ret;

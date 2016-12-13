@@ -1,4 +1,4 @@
-text size :   4764(0x0129C)
+text size :   4793(0x012B9)
 data size :   4936(0x01348)
 bss  size :      0(0x00000)
 
@@ -37,33 +37,33 @@ bss  size :      0(0x00000)
 0x00000C3C : _init_mouse
 0x00000C3C : (.text)
 0x00000C6A : _mouse_decode
-0x00000D09 : (.text)
-0x00000D09 : _cpu_hlt
-0x00000D0B : _io_stihlt
-0x00000D0E : _write_mem_8bits
-0x00000D19 : _outb
-0x00000D23 : _inb
-0x00000D2E : _cpu_irq_disable
-0x00000D37 : _cpu_irq_enable
-0x00000D3F : _load_cr0
-0x00000D43 : _store_cr0
-0x00000D4B : _io_cli
-0x00000D4D : _io_sti
-0x00000D4F : _io_load_eflags
-0x00000D52 : _io_store_eflags
-0x00000D59 : _load_gdtr
-0x00000D69 : _load_idtr
-0x00000D79 : _asm_irq_handler1
-0x00000D90 : _asm_irq_handler7
-0x00000DA7 : _asm_irq_handler12
-0x00000DBE : _sprintf
-0x00000DBE : (.text)
-0x00000DD2 : _strcmp
-0x00000DD2 : (.text)
-0x00000DF7 : (.text)
-0x00000E33 : _strtoul0
-0x00000F06 : (.text)
-0x00000F2E : _vsprintf
+0x00000D26 : (.text)
+0x00000D26 : _cpu_hlt
+0x00000D28 : _io_stihlt
+0x00000D2B : _write_mem_8bits
+0x00000D36 : _outb
+0x00000D40 : _inb
+0x00000D4B : _cpu_irq_disable
+0x00000D54 : _cpu_irq_enable
+0x00000D5C : _load_cr0
+0x00000D60 : _store_cr0
+0x00000D68 : _io_cli
+0x00000D6A : _io_sti
+0x00000D6C : _io_load_eflags
+0x00000D6F : _io_store_eflags
+0x00000D76 : _load_gdtr
+0x00000D86 : _load_idtr
+0x00000D96 : _asm_irq_handler1
+0x00000DAD : _asm_irq_handler7
+0x00000DC4 : _asm_irq_handler12
+0x00000DDB : _sprintf
+0x00000DDB : (.text)
+0x00000DEF : _strcmp
+0x00000DEF : (.text)
+0x00000E14 : (.text)
+0x00000E50 : _strtoul0
+0x00000F23 : (.text)
+0x00000F4B : _vsprintf
 0x00000000 : (.data)
 0x00000000 : (.data)
 0x00000000 : (.data)

@@ -34,9 +34,14 @@ int mouse_decode(struct mouse_pos *mpos, unsigned char data)
 			return 0;
 		}
 	} else {
+		if (mouse_dec.phase == 1){
+			if (data & 0xc8 != 0x08){ //第一个字节出错
+				return 0;
+			}
+		}
 		mouse_dec.buf[mouse_dec.phase - 1] = data;
 		//设置读取下一个字段
-		if (mouse_dec.phase >= 3){
+		if (mouse_dec.phase == 3){
 			mouse_dec.phase = 1;
 			if (mpos){
 				mpos->btn = mouse_dec.buf[0] & 0x7;
