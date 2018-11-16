@@ -7,6 +7,7 @@
 #include "input/keyboard.h"
 #include "input/mouse.h"
 #include "mm/mem_init.h"
+#include "mm.h"
 
 struct boot_info{
     unsigned char   cyls;
@@ -42,21 +43,26 @@ void os_entry(void)
     init_keyboard();
     init_mouse();
 
-    mem_size = mem_test(0x00400000, 0xbfffffff) / 1024 / 1024;
+    mem_size = mem_test(0x00400000, 0xbfffffff);
+
+
 
     init_palette();
 
     init_screen(binfo->vram, binfo->scrn_x, binfo->scrn_y);
 
     //draw_font8(binfo->vram, binfo->scrn_x, 3, 3, COLOR_WHITE, font_A);
-    draw_ascii_font8(5, 48, COLOR_WHITE, "Hunter OS -- V1.0");
+    draw_ascii_font8(5, 48, COLOR_WHITE, "Hunter OS -- V1.0.0");
     draw_ascii_font8(5, 64, COLOR_WHITE, "-- Create by lichao.");
 
     sprintf(var, "Screen size : %d x %d.", binfo->scrn_x, binfo->scrn_y);
 
     draw_ascii_font8(5, 80, COLOR_WHITE, var);
 
-    sprintf(var, "memory : %dMB", mem_size);
+    mm_init(0x00001000, 0x0009e000);
+    mm_space_add(0x00400000, mem_size - 0x00400000);
+
+    sprintf(var, "memory : %dMB, free size : %dKB", mem_size, mm_total() / 1024);
 	box_fill(COLOR_DARK_LI_BLUE, 32, 96, 32 + 15 * 8 - 1, 111);
 	draw_ascii_font8(32, 96, COLOR_WHITE, var);
 

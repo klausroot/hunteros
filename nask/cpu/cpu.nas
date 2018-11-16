@@ -20,6 +20,7 @@
         GLOBAL	_load_cr0, _store_cr0 ;
         GLOBAL  _io_cli, _io_sti, _io_load_eflags, _io_store_eflags     ;开关中断函数集
         GLOBAL  _asm_irq_handler1, _asm_irq_handler7, _asm_irq_handler12
+        GLOBAL	_mem_test_sub
         EXTERN  _irq_handler1, _irq_handler7, _irq_handler12        
 
 ;实际函数
@@ -146,6 +147,30 @@ _asm_irq_handler12:
         POP     ES
         IRETD
 
+_mem_test_sub: ;unsigned int mem_test_sub(unsigned int start, unsigned int end)
+		PUSH	EBX
+		MOV		EAX, [ESP + 4 + 4];
+mts_loop:
+		MOV		EBX, EAX
+		ADD		EBX, 0xffc
+		MOV 	EDX, [EBX] 	;ptr = (unsigned int *)(addr + 0xffc)
+		MOV		DWORD [EBX], 0xaa55aa55  ;*ptr = 0xaa55aa55
+		XOR		DWORD [EBX], 0xffffffff ;*ptr ^= 0xffffffff;  
+		CMP		DWORD [EBX], 0x55aa55aa  ;if (*ptr == 0x55aa55aa)
+		JNE		mts_fin 
+		XOR		DWORD [EBX], 0xffffffff	;再反转
+		CMP		DWORD [EBX], 0xaa55aa55  ; if (*ptr = 0xaa55aa55)
+		JNE		mts_fin
+		MOV		[EBX], EDX
+		ADD		EAX, 0x1000
+		CMP		EAX, [ESP + 4 + 8]
+		JBE		mts_loop	
+		POP		EBX
+		RET
+mts_fin:
+		MOV		[EBX], EDX
+		POP		EBX
+		RET
 
 [SECTION .data]
         ALIGNB  4

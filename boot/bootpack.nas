@@ -13,6 +13,9 @@
 	EXTERN	_init_screen
 	EXTERN	_draw_ascii_font8
 	EXTERN	_sprintf
+	EXTERN	_mm_init
+	EXTERN	_mm_space_add
+	EXTERN	_mm_total
 	EXTERN	_box_fill
 	EXTERN	_init_mouse_cursor8
 	EXTERN	_draw_block8_8
@@ -26,13 +29,13 @@
 [FILE "bootpack.c"]
 [SECTION .data]
 LC0:
-	DB	"Hunter OS -- V1.0",0x00
+	DB	"Hunter OS -- V1.0.0",0x00
 LC1:
 	DB	"-- Create by lichao.",0x00
 LC2:
 	DB	"Screen size : %d x %d.",0x00
 LC3:
-	DB	"memory : %dMB",0x00
+	DB	"memory : %dMB, free size : %dKB",0x00
 LC4:
 	DB	"keyboard",0x00
 LC5:
@@ -69,7 +72,6 @@ _os_entry:
 	MOV	ESI,EAX
 	CALL	_init_palette
 	MOVSX	EAX,WORD [4086]
-	SHR	ESI,20
 	PUSH	EAX
 	MOVSX	EAX,WORD [4084]
 	PUSH	EAX
@@ -100,24 +102,35 @@ _os_entry:
 	PUSH	5
 	CALL	_draw_ascii_font8
 	ADD	ESP,32
+	PUSH	647168
+	PUSH	4096
+	CALL	_mm_init
+	LEA	EAX,DWORD [-4194304+ESI]
+	PUSH	EAX
+	PUSH	4194304
+	CALL	_mm_space_add
+	CALL	_mm_total
+	SHR	EAX,10
+	PUSH	EAX
 	PUSH	ESI
 	MOV	ESI,2
 	PUSH	LC3
 	PUSH	EBX
 	CALL	_sprintf
+	ADD	ESP,32
 	PUSH	111
 	PUSH	151
 	PUSH	96
 	PUSH	32
 	PUSH	14
 	CALL	_box_fill
-	ADD	ESP,32
 	PUSH	EBX
-	LEA	EBX,DWORD [-332+EBP]
 	PUSH	7
+	LEA	EBX,DWORD [-332+EBP]
 	PUSH	96
 	PUSH	32
 	CALL	_draw_ascii_font8
+	ADD	ESP,36
 	PUSH	14
 	PUSH	EBX
 	CALL	_init_mouse_cursor8
@@ -141,7 +154,7 @@ _os_entry:
 	PUSH	16
 	PUSH	16
 	CALL	_draw_block8_8
-	ADD	ESP,48
+	ADD	ESP,32
 	PUSH	LC4
 	PUSH	_keyboard_fifo
 	CALL	_register_fifo

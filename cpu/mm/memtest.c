@@ -5,14 +5,15 @@
 #define MEM_TEST_U32		0xaa55aa55
 #define MEM_TEST_U32_REVRSE	0x55aa55aa
 
+#if 0
 unsigned int mem_test_sub(unsigned int start, unsigned int end)
 {
 	unsigned int addr;
 	unsigned int *ptr;
 	unsigned int save_data;
 
-	for (addr = start; addr <= end; addr+= 4){
-		ptr = (unsigned int *)addr;
+	for (addr = start; addr <= end; addr+= 0x1000){
+		ptr = (unsigned int *)(addr + 0xffc);
 		save_data = *ptr;
 		*ptr = MEM_TEST_U32; //试写
 		*ptr ^= 0xffffffff; //反转
@@ -20,7 +21,7 @@ unsigned int mem_test_sub(unsigned int start, unsigned int end)
 			*ptr = save_data;
 			goto _bad_mem;
 		}
-		*ptr ^= 0xffffffff; //再次反转
+		*ptr ^= 0xffffffff; //再次反转   两次反转编译器将会优化掉
 		if (*ptr != MEM_TEST_U32){
 			*ptr = save_data;
 			goto _bad_mem;
@@ -33,7 +34,7 @@ _bad_mem:
 
 	return addr;
 }
-
+#endif
 unsigned int mem_test(unsigned int start, unsigned int end)
 {
 	unsigned char flg486 = 0;

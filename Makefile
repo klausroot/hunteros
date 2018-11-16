@@ -23,19 +23,21 @@ DEL      = rm
 #C to OBJ
 OBJS = $(ROOT)/boot/bootpack.obj \
 	   $(ROOT)/graphics/graphics.obj \
+	   $(ROOT)/graphics/sheet.obj \
 	   $(ROOT)/cpu/dsctbl.obj \
 	   $(ROOT)/cpu/irq.obj \
 	   $(ROOT)/cpu/mm/memtest.obj \
 	   $(ROOT)/system/fifo.obj \
 	   $(ROOT)/drivers/input/keyboard.obj \
 	   $(ROOT)/drivers/input/mouse.obj \
+	   $(ROOT)/mm/memory.obj \
 
 #NASK to OBJ
 OBJ_BS = $(ROOT)/nask/cpu/cpu.obj \
 
 #NASK to BIN
 OBJ_LS = $(ROOT)/nask/ipl/ipl10.bin	\
-$(ROOT)/nask/cpu/asmhead.bin	\
+		 $(ROOT)/nask/cpu/asmhead.bin \
 
 OBJ_FONT = $(ROOT)/font/hankaku.obj \
 
@@ -46,6 +48,7 @@ INCLUDES = \
 -I$(ROOT)/graphics \
 -I$(ROOT)/includes \
 -I$(ROOT)/drivers \
+-I$(ROOT)/mm \
 
 CC_ARGS	= \
 -Os	\
@@ -98,6 +101,9 @@ hunteros.img : $(ROOT)/nask/ipl/ipl10.bin hunteros.bin Makefile
 
 # ∆‰À˚÷∏¡Ó
 
+img :
+	$(MAKE) hunteros.img
+
 run :
 	$(MAKE) img
 	$(COPY) hunteros.img ..\tolset\z_tools\qemu\fdimage0.bin
@@ -107,8 +113,6 @@ install :
 	$(MAKE) img
 	$(IMGTOL) w a: hunteros.img
 
-img :
-	$(MAKE) hunteros.img
 #clean :
 #	-$(DEL) *.bin
 #	-$(DEL) *.lst

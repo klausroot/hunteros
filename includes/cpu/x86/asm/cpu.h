@@ -23,4 +23,6 @@ void asm_irq_handler12(void);
 extern void io_cli(void);
 extern void io_sti(void);
 extern void io_stihlt(void);
+
+extern unsigned int mem_test_sub(unsigned int start, unsigned int end);
 #endif
