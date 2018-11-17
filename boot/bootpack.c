@@ -46,7 +46,6 @@ void os_entry(void)
     mem_size = mem_test(0x00400000, 0xbfffffff);
 
 
-
     init_palette();
 
     init_screen(binfo->vram, binfo->scrn_x, binfo->scrn_y);
