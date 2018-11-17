@@ -1,3 +1,7 @@
 *.lst
 *.obj
 *.gas
+*.bin
+.cproject
+.project
+.settings
