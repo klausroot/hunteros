@@ -8,6 +8,7 @@
 #include "input/mouse.h"
 #include "mm/mem_init.h"
 #include "mm.h"
+#include "sheet.h"
 
 struct boot_info{
     unsigned char   cyls;
@@ -26,11 +27,14 @@ struct st_fifo keyboard_fifo, mouse_fifo;
 void os_entry(void)
 {
     struct boot_info *binfo;
+    struct screen *screen;
     char var[64];
     unsigned char mouse_cursor[16*16];
     int data;
     int mx, my;
     unsigned int mem_size;
+    unsigned char *bg_buf;
+    struct sheet *bg_sht, *mouse_sht;
 
     binfo =  (struct boot_info *)BOOT_INFO;
 
@@ -44,33 +48,46 @@ void os_entry(void)
     init_mouse();
 
     mem_size = mem_test(0x00400000, 0xbfffffff);
-
-
-    init_palette();
-
-    init_screen(binfo->vram, binfo->scrn_x, binfo->scrn_y);
-
-    //draw_font8(binfo->vram, binfo->scrn_x, 3, 3, COLOR_WHITE, font_A);
-    draw_ascii_font8(5, 48, COLOR_WHITE, "Hunter OS -- V1.0.0");
-    draw_ascii_font8(5, 64, COLOR_WHITE, "-- Create by lichao.");
-
-    sprintf(var, "Screen size : %d x %d.", binfo->scrn_x, binfo->scrn_y);
-
-    draw_ascii_font8(5, 80, COLOR_WHITE, var);
-
     mm_init(0x00001000, 0x0009e000);
     mm_space_add(0x00400000, mem_size - 0x00400000);
 
+    init_palette();
+
+    sheet_ctrl_init(binfo->vram, binfo->scrn_x, binfo->scrn_y);
+
+    bg_sht = new_sheet();
+    mouse_sht = new_sheet();
+
+    bg_buf = lmalloc(binfo->scrn_x * binfo->scrn_y);
+
+    sheet_setbuf(bg_sht, bg_buf, binfo->scrn_x, binfo->scrn_y, -1);
+    sheet_setbuf(mouse_sht, mouse_cursor, 16, 16, 99);
+
+    screen = init_screen(bg_buf, binfo->scrn_x, binfo->scrn_y);
+
+    //draw_font8(binfo->vram, binfo->scrn_x, 3, 3, COLOR_WHITE, font_A);
+    draw_ascii_font8(screen, 5, 48, COLOR_WHITE, "Hunter OS -- V1.0.0");
+    draw_ascii_font8(screen, 5, 64, COLOR_WHITE, "-- Create by lichao.");
+
+    sprintf(var, "Screen size : %d x %d.", binfo->scrn_x, binfo->scrn_y);
+
+    draw_ascii_font8(screen, 5, 80, COLOR_WHITE, var);
+
     sprintf(var, "memory : %dMB, free size : %dKB", mem_size, mm_total() / 1024);
-	box_fill(COLOR_DARK_LI_BLUE, 32, 96, 32 + 15 * 8 - 1, 111);
-	draw_ascii_font8(32, 96, COLOR_WHITE, var);
+//	box_fill(COLOR_DARK_LI_BLUE, 32, 96, 32 + 15 * 8 - 1, 111);
+	draw_ascii_font8(screen, 32, 96, COLOR_WHITE, var);
 
     init_mouse_cursor8(mouse_cursor, COLOR_DARK_LI_BLUE);
 
+    sheet_switch(bg_sht, 0);
+    sheet_switch(mouse_sht, 1);
+
+    sheet_slide(bg_sht, 0, 0);
     mx = (binfo->scrn_x - 16) / 2; //计算画面中心坐标
     my = (binfo->scrn_y - 28 - 16) / 2;
+    sheet_slide(mouse_sht, mx, my);
 
-    draw_block8_8(16, 16, mx, my, mouse_cursor, 16);
+//    draw_block8_8(16, 16, mx, my, mouse_cursor, 16);
     
     struct mouse_pos mpos;
     register_fifo(&keyboard_fifo, "keyboard");
@@ -89,8 +106,9 @@ void os_entry(void)
     			data = get_bdata_fifo("keyboard");
     			io_sti();
     			sprintf(var, "%02x", data);
-    			box_fill(COLOR_DARK_LI_BLUE, 0, 16, 15, 31);
-    			draw_ascii_font8(0, 16, COLOR_WHITE, var);
+    			box_fill(screen, COLOR_DARK_LI_BLUE, 0, 16, 15, 31);
+    			draw_ascii_font8(screen, 0, 16, COLOR_WHITE, var);
+    			sheet_refresh(bg_sht, 0, 16, 15, 31);
     		}else if (fifo_status("mouse")){
     			data = get_bdata_fifo("mouse");
     			io_sti();
@@ -107,10 +125,11 @@ void os_entry(void)
 					if (mpos.btn & 0x04){
 						var[3] = 'C';
 					}
-	    			box_fill(COLOR_DARK_LI_BLUE, 32, 16, 32 + 15 * 8 - 1, 31);
-	    			draw_ascii_font8(32, 16, COLOR_WHITE, var);
+	    			box_fill(screen, COLOR_DARK_LI_BLUE, 32, 16, 32 + 15 * 8 - 1, 31);
+	    			draw_ascii_font8(screen, 32, 16, COLOR_WHITE, var);
+	    			sheet_refresh(bg_sht, 32, 16, 32 + 15 * 8, 31);
 	    			//鼠标指针移动
-	    			box_fill(COLOR_DARK_LI_BLUE, mx, my, mx + 15, my + 15);
+//	    			box_fill(screen, COLOR_DARK_LI_BLUE, mx, my, mx + 15, my + 15);
 	    			mx += mpos.x;
 	    			my += mpos.y;
 	    			if (mx < 0){
@@ -126,9 +145,11 @@ void os_entry(void)
 	    				my = binfo->scrn_y - 16;
 	    			}
 	    			sprintf(var, "(%3d, %3d)", mx, my);
-	    			box_fill(COLOR_DARK_LI_BLUE, 0, 0, 79, 15); //隐藏坐标
-	    			draw_ascii_font8(0, 0, COLOR_WHITE, var); //显示坐标
-	    			draw_block8_8(16, 16, mx, my, mouse_cursor, 16);//画鼠标
+	    			box_fill(screen, COLOR_DARK_LI_BLUE, 0, 0, 79, 15); //隐藏坐标
+	    			draw_ascii_font8(screen, 0, 0, COLOR_WHITE, var); //显示坐标
+	    			sheet_refresh(bg_sht, 0, 0, 79, 15);
+//	    			draw_block8_8(16, 16, mx, my, mouse_cursor, 16);//画鼠标
+	    			sheet_slide(mouse_sht, mx, my);
     			}
 //    			sprintf(var, "%02x", data);
 //    			box_fill(COLOR_DARK_LI_BLUE, 32, 96, 47, 111);

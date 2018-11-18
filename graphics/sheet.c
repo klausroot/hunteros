@@ -36,6 +36,7 @@ void *sheet_ctrl_init(unsigned char *vram, int xsize, int ysize)
 	sm->top = -1;
 	for (i = 0; i < MAX_SHEETS; i++) {
 		sm->sht_table[i].flag = 0;
+		sm->sht_table[i].buf = NULL;
 	}
 
 	INIT_LIST_HEAD(&sm->head);
@@ -104,6 +105,9 @@ static void __sheet_refresh(struct sheet *sht, int vx0, int vy0, int vx1, int vy
 	*/
 	list_for_each_entry(p, &sm->head, entry) {/*只刷新对应*/
 		buf = p->buf;
+		if (!buf) {
+			continue;
+		}
 		bx0 = vx0 - p->vx0;
 		by0 = vy0 - p->vy0;
 		bx1 = vx1 - p->vx0;
@@ -127,10 +131,10 @@ static void __sheet_refresh(struct sheet *sht, int vx0, int vy0, int vx1, int vy
 	}
 }
 
-void sheet_refresh(struct sheet *sht)
+void sheet_refresh(struct sheet *sht, int bx0, int by0, int bx1, int by1)
 {
 	if (sht->height >= 0) {
-		__sheet_refresh(sht, sht->vx0, sht->vy0, sht->vx0 + sht->bwidth, sht->vy0 + sht->bheight);
+		__sheet_refresh(sht, sht->vx0 + bx0, sht->vy0 + by0, sht->vx0 + bx1, sht->vy0 + by1);
 	}
 }
 
@@ -208,7 +212,7 @@ int sheet_switch(struct sheet *sht, int height)
 		sm->top++;
 	}
 
-	sheet_refresh(sht);
+	sheet_refresh(sht, sht->vx0, sht->vy0, sht->bwidth, sht->bheight);
 	return 0;
 }
 
@@ -222,4 +226,5 @@ void free_sheet(struct sheet *sht)
 	sheet_switch(sht, -1);//切到最下层隐藏
 
 	sht->flag &= ~SHEET_INUSED;
+	sht->buf = NULL;
 }

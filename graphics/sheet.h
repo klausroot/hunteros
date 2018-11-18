@@ -18,7 +18,7 @@ struct sheet {
 void *sheet_ctrl_init(unsigned char *vram, int xsize, int ysize);
 struct sheet *new_sheet(void);
 void free_sheet(struct sheet *sht);
-void sheet_refresh(struct sheet *sht);
+void sheet_refresh(struct sheet *sht, int bx0, int by0, int bx1, int by1);
 void sheet_slide(struct sheet *sht, int vx0, int vy0);
 int sheet_switch(struct sheet *sht, int height);
 int sheet_setbuf(struct sheet *sht, void *buf, int xsize, int ysize, int color);

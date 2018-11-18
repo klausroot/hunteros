@@ -24,6 +24,7 @@ int get_bdata_fifo(char *name);
 
 
 int register_fifo(struct st_fifo *, char *name);
+struct st_fifo *open_fifo(const char *name);
 
 int fifo_status(char *name);
 #endif

@@ -26,40 +26,51 @@ static int get_screen_width(void)
 }
 
 
-void init_screen(unsigned char *vram, int x_size, int y_size)
+struct screen *init_screen(unsigned char *vram, int x_size, int y_size)
 {
+	struct screen *scrn;
+//    init_screen_info(vram, x_size);
+	scrn = (struct screen *)lmalloc(sizeof(struct screen));
+	if (!scrn) {
+		return 0;
+	}
+	scrn->addr = vram;
+	scrn->xsize = x_size;
+	scrn->ysize = y_size;
 
-    init_screen_info(vram, x_size);
-
-    box_fill(COLOR_DARK_LI_BLUE, 0, 0, x_size - 1, y_size - 29);    
-    box_fill(COLOR_BRIGHT_GRAY, 0, y_size - 28, x_size - 1, y_size - 28);
-    box_fill(COLOR_WHITE, 0, y_size - 27, x_size - 1, y_size - 27);
-    box_fill(COLOR_BRIGHT_GRAY, 0, y_size - 26, x_size - 1, y_size - 1);
+    box_fill(scrn, COLOR_DARK_LI_BLUE, 0, 0, x_size - 1, y_size - 29);
+    box_fill(scrn, COLOR_BRIGHT_GRAY, 0, y_size - 28, x_size - 1, y_size - 28);
+    box_fill(scrn, COLOR_WHITE, 0, y_size - 27, x_size - 1, y_size - 27);
+    box_fill(scrn, COLOR_BRIGHT_GRAY, 0, y_size - 26, x_size - 1, y_size - 1);
 
     //凸起button
-    box_fill(COLOR_WHITE, 3, y_size - 24, 59, y_size - 24);
-    box_fill(COLOR_WHITE, 2, y_size - 24, 2, y_size - 4);
-    box_fill(COLOR_DARK_GRAY, 3, y_size - 4, 59, y_size - 4);
-    box_fill(COLOR_DARK_GRAY, 59, y_size - 23, 59, y_size - 4);
-    box_fill(COLOR_BLACK, 60, y_size - 24, 60, y_size - 3);
-    box_fill(COLOR_BLACK, 2, y_size - 3, 59, y_size - 3); 
+    box_fill(scrn, COLOR_WHITE, 3, y_size - 24, 59, y_size - 24);
+    box_fill(scrn, COLOR_WHITE, 2, y_size - 24, 2, y_size - 4);
+    box_fill(scrn, COLOR_DARK_GRAY, 3, y_size - 4, 59, y_size - 4);
+    box_fill(scrn, COLOR_DARK_GRAY, 59, y_size - 23, 59, y_size - 4);
+    box_fill(scrn, COLOR_BLACK, 60, y_size - 24, 60, y_size - 3);
+    box_fill(scrn, COLOR_BLACK, 2, y_size - 3, 59, y_size - 3);
 
     //凹进去的button
-    box_fill(COLOR_DARK_GRAY, x_size - 47, y_size - 24, x_size - 4, y_size - 24);
-    box_fill(COLOR_DARK_GRAY, x_size - 47, y_size - 23, x_size - 47, y_size - 4);
-    box_fill(COLOR_WHITE, x_size - 47, y_size - 3, x_size - 4, y_size - 3);
-    box_fill(COLOR_WHITE, x_size - 3, y_size - 24, x_size - 3, y_size - 3); 
+    box_fill(scrn, COLOR_DARK_GRAY, x_size - 47, y_size - 24, x_size - 4, y_size - 24);
+    box_fill(scrn, COLOR_DARK_GRAY, x_size - 47, y_size - 23, x_size - 47, y_size - 4);
+    box_fill(scrn, COLOR_WHITE, x_size - 47, y_size - 3, x_size - 4, y_size - 3);
+    box_fill(scrn, COLOR_WHITE, x_size - 3, y_size - 24, x_size - 3, y_size - 3);
+    return scrn;
 }
 
 
-int box_fill(unsigned char color, int x0, int y0, int x1, int y1)
+int box_fill(struct screen *scrn, unsigned char color, int x0, int y0, int x1, int y1)
 {
     int x,y;
     unsigned char *vram = 0;
     int x_size = 0;
 
-    vram = get_vram_addr();
-    x_size = get_screen_width();
+    if (!scrn || !scrn->addr) {
+    	return -1;
+    }
+    vram = scrn->addr;//get_vram_addr();
+    x_size = scrn->xsize;//get_screen_width();
 
     for (y = y0; y <= y1; y++){
         for (x = x0; x <= x1; x++){
@@ -123,7 +134,7 @@ static const unsigned char font_A[16] = {
     0x24, 0x7e, 0x42, 0x42, 0x42, 0xe7, 0x00, 0x00,
 };
 */
-void draw_font8(int x, int y,  unsigned char color, unsigned char *font)
+void draw_font8(struct screen *scrn, int x, int y,  unsigned char color, unsigned char *font)
 {
     int i = 0;
     
@@ -131,8 +142,12 @@ void draw_font8(int x, int y,  unsigned char color, unsigned char *font)
     unsigned char fd;//font_data
     int xsize = 0;
     
-    vram = get_vram_addr();
-    xsize = get_screen_width();
+    if (!scrn || !scrn->addr) {
+    	return;
+    }
+
+    vram = scrn->addr;//get_vram_addr();
+    xsize = scrn->xsize;//get_screen_width();
 
     for (i = 0; i < 16; i++){
         vram_p = vram + xsize * (y + i) + x;
@@ -150,18 +165,18 @@ void draw_font8(int x, int y,  unsigned char color, unsigned char *font)
 
 extern unsigned char hankaku[];
 
-int draw_ascii_font8(int x, int y, unsigned char color, char *str)
+int draw_ascii_font8(struct screen *scrn, int x, int y, unsigned char color, char *str)
 {
     char *p_str;//= NULL;
     int x_pos = x;
 
-    if (!str){
+    if (!str || !scrn){
         return -1;
     }
     p_str = str;
 
     for (;*p_str != '\0'; p_str++){
-        draw_font8(x_pos, y, color, hankaku + *p_str * 16);
+        draw_font8(scrn, x_pos, y, color, hankaku + *p_str * 16);
         x_pos+=8;
     }
 
@@ -179,8 +194,8 @@ static char cursor[16][16] = {
     "*OOOOOOOO*......",
     "*OOOO**OOO*.....",
     "*OOO*..*OOO*....",
-    "*oo*....*OOO*...",
-    "*o*......*OOO*..",
+    "*OO*....*OOO*...",
+    "*O*......*OOO*..",
     "**........*OOO*.",
     "*..........*OOO*",
     "............*OO*",

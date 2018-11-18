@@ -1,5 +1,6 @@
 #ifndef _GRAPHICS_H_
 #define _GRAPHICS_H_
+#include "mm.h"
 
 enum color_list{
     COLOR_BLACK = 0,
@@ -20,13 +21,19 @@ enum color_list{
     COLOR_DARK_GRAY,
 };
 
+struct screen {
+	int xsize;
+	int ysize;
+	unsigned char *addr;
+};
+
 void init_palette(void);
 
-void init_screen(unsigned char *vram, int x_size, int y_size);
+struct screen *init_screen(unsigned char *vram, int x_size, int y_size);
 
-int box_fill(unsigned char color_num, int x0, int y0, int x1, int y1);
+int box_fill(struct screen *scrn, unsigned char color_num, int x0, int y0, int x1, int y1);
 
-int draw_ascii_font8(int x, int y, unsigned char color, char *str);
+int draw_ascii_font8(struct screen *scrn, int x, int y, unsigned char color, char *str);
 
 void init_mouse_cursor8(unsigned char *mouse, unsigned char bc);
 

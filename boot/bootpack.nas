@@ -9,23 +9,19 @@
 	EXTERN	_init_keyboard
 	EXTERN	_init_mouse
 	EXTERN	_mem_test
+	EXTERN	_mm_init
+	EXTERN	_mm_space_add
 	EXTERN	_init_palette
+	EXTERN	_sheet_ctrl_init
+	EXTERN	_new_sheet
+	EXTERN	_lmalloc
+	EXTERN	_sheet_setbuf
 	EXTERN	_init_screen
 	EXTERN	_draw_ascii_font8
 	EXTERN	_sprintf
-	EXTERN	_mm_init
-	EXTERN	_mm_space_add
 	EXTERN	_mm_total
-	EXTERN	_box_fill
 	EXTERN	_init_mouse_cursor8
-	EXTERN	_draw_block8_8
-	EXTERN	_register_fifo
-	EXTERN	_io_cli
-	EXTERN	_fifo_status
-	EXTERN	_get_bdata_fifo
-	EXTERN	_io_sti
-	EXTERN	_mouse_decode
-	EXTERN	_io_stihlt
+	EXTERN	_sheet_switch
 [FILE "bootpack.c"]
 [SECTION .data]
 LC0:
@@ -36,16 +32,6 @@ LC2:
 	DB	"Screen size : %d x %d.",0x00
 LC3:
 	DB	"memory : %dMB, free size : %dKB",0x00
-LC4:
-	DB	"keyboard",0x00
-LC5:
-	DB	"mouse",0x00
-LC7:
-	DB	"[lrc %4d %4d]",0x00
-LC8:
-	DB	"(%3d, %3d)",0x00
-LC6:
-	DB	"%02x",0x00
 [SECTION .text]
 	GLOBAL	_os_entry
 _os_entry:
@@ -54,7 +40,6 @@ _os_entry:
 	PUSH	EDI
 	PUSH	ESI
 	PUSH	EBX
-	LEA	EBX,DWORD [-76+EBP]
 	SUB	ESP,340
 	CALL	_init_gdt_idt
 	CALL	_init_pic
@@ -69,26 +54,71 @@ _os_entry:
 	PUSH	-1073741825
 	PUSH	4194304
 	CALL	_mem_test
-	MOV	ESI,EAX
+	PUSH	647168
+	PUSH	4096
+	MOV	DWORD [-352+EBP],EAX
+	CALL	_mm_init
+	ADD	ESP,32
+	MOV	EAX,DWORD [-352+EBP]
+	SUB	EAX,4194304
+	PUSH	EAX
+	PUSH	4194304
+	CALL	_mm_space_add
 	CALL	_init_palette
 	MOVSX	EAX,WORD [4086]
 	PUSH	EAX
 	MOVSX	EAX,WORD [4084]
 	PUSH	EAX
 	PUSH	DWORD [4088]
+	CALL	_sheet_ctrl_init
+	CALL	_new_sheet
+	MOV	EDI,EAX
+	CALL	_new_sheet
+	MOV	ESI,EAX
+	MOVSX	EDX,WORD [4086]
+	MOVSX	EAX,WORD [4084]
+	IMUL	EAX,EDX
+	PUSH	EAX
+	CALL	_lmalloc
+	PUSH	-1
+	MOV	EBX,EAX
+	MOVSX	EAX,WORD [4086]
+	PUSH	EAX
+	MOVSX	EAX,WORD [4084]
+	PUSH	EAX
+	PUSH	EBX
+	PUSH	EDI
+	CALL	_sheet_setbuf
+	LEA	EAX,DWORD [-332+EBP]
+	ADD	ESP,44
+	PUSH	99
+	PUSH	16
+	PUSH	16
+	PUSH	EAX
+	PUSH	ESI
+	CALL	_sheet_setbuf
+	MOVSX	EAX,WORD [4086]
+	PUSH	EAX
+	MOVSX	EAX,WORD [4084]
+	PUSH	EAX
+	PUSH	EBX
+	LEA	EBX,DWORD [-76+EBP]
 	CALL	_init_screen
-	ADD	ESP,36
+	ADD	ESP,32
+	MOV	ESI,EAX
 	PUSH	LC0
 	PUSH	7
 	PUSH	48
 	PUSH	5
+	PUSH	EAX
 	CALL	_draw_ascii_font8
 	PUSH	LC1
 	PUSH	7
 	PUSH	64
 	PUSH	5
+	PUSH	ESI
 	CALL	_draw_ascii_font8
-	ADD	ESP,32
+	ADD	ESP,40
 	MOVSX	EAX,WORD [4086]
 	PUSH	EAX
 	MOVSX	EAX,WORD [4084]
@@ -100,223 +130,33 @@ _os_entry:
 	PUSH	7
 	PUSH	80
 	PUSH	5
+	PUSH	ESI
 	CALL	_draw_ascii_font8
-	ADD	ESP,32
-	PUSH	647168
-	PUSH	4096
-	CALL	_mm_init
-	LEA	EAX,DWORD [-4194304+ESI]
-	PUSH	EAX
-	PUSH	4194304
-	CALL	_mm_space_add
+	ADD	ESP,36
 	CALL	_mm_total
 	SHR	EAX,10
 	PUSH	EAX
-	PUSH	ESI
-	MOV	ESI,2
+	PUSH	DWORD [-352+EBP]
 	PUSH	LC3
 	PUSH	EBX
 	CALL	_sprintf
-	ADD	ESP,32
-	PUSH	111
-	PUSH	151
+	PUSH	EBX
+	PUSH	7
 	PUSH	96
 	PUSH	32
-	PUSH	14
-	CALL	_box_fill
-	PUSH	EBX
-	PUSH	7
-	LEA	EBX,DWORD [-332+EBP]
-	PUSH	96
-	PUSH	32
-	CALL	_draw_ascii_font8
-	ADD	ESP,36
-	PUSH	14
-	PUSH	EBX
-	CALL	_init_mouse_cursor8
-	MOVSX	EAX,WORD [4084]
-	LEA	ECX,DWORD [-16+EAX]
-	MOV	EAX,ECX
-	MOV	ECX,2
-	CDQ
-	IDIV	ESI
-	MOV	EDI,EAX
-	MOVSX	EAX,WORD [4086]
-	PUSH	16
-	LEA	ESI,DWORD [-44+EAX]
-	PUSH	EBX
-	MOV	EAX,ESI
-	CDQ
-	IDIV	ECX
-	PUSH	EAX
-	MOV	ESI,EAX
-	PUSH	EDI
-	PUSH	16
-	PUSH	16
-	CALL	_draw_block8_8
-	ADD	ESP,32
-	PUSH	LC4
-	PUSH	_keyboard_fifo
-	CALL	_register_fifo
-	PUSH	LC5
-	PUSH	_mouse_fifo
-	CALL	_register_fifo
-L23:
-	ADD	ESP,16
-L18:
-	CALL	_io_cli
-	PUSH	LC4
-	CALL	_fifo_status
-	POP	EDX
-	TEST	EAX,EAX
-	JNE	L5
-	PUSH	LC5
-	CALL	_fifo_status
-	POP	EBX
-	TEST	EAX,EAX
-	JE	L24
-L5:
-	PUSH	LC4
-	CALL	_fifo_status
-	POP	ECX
-	TEST	EAX,EAX
-	JNE	L25
-	PUSH	LC5
-	CALL	_fifo_status
-	POP	EDX
-	TEST	EAX,EAX
-	JE	L18
-	PUSH	LC5
-	CALL	_get_bdata_fifo
-	MOV	EBX,EAX
-	CALL	_io_sti
-	MOVZX	EAX,BL
-	PUSH	EAX
-	LEA	EAX,DWORD [-348+EBP]
-	PUSH	EAX
-	CALL	_mouse_decode
-	ADD	ESP,12
-	TEST	EAX,EAX
-	JE	L18
-	PUSH	DWORD [-344+EBP]
-	PUSH	DWORD [-348+EBP]
-	PUSH	LC7
-	LEA	EBX,DWORD [-76+EBP]
-	PUSH	EBX
-	CALL	_sprintf
-	ADD	ESP,16
-	MOV	EAX,DWORD [-340+EBP]
-	TEST	EAX,1
-	JE	L11
-	MOV	BYTE [-75+EBP],76
-L11:
-	TEST	EAX,2
-	JE	L12
-	MOV	BYTE [-74+EBP],82
-L12:
-	AND	EAX,4
-	JE	L13
-	MOV	BYTE [-73+EBP],67
-L13:
-	PUSH	31
-	PUSH	151
-	PUSH	16
-	PUSH	32
-	PUSH	14
-	CALL	_box_fill
-	PUSH	EBX
-	PUSH	7
-	PUSH	16
-	PUSH	32
-	CALL	_draw_ascii_font8
-	LEA	EAX,DWORD [15+ESI]
-	ADD	ESP,36
-	PUSH	EAX
-	LEA	EAX,DWORD [15+EDI]
-	PUSH	EAX
 	PUSH	ESI
-	PUSH	EDI
-	PUSH	14
-	CALL	_box_fill
-	ADD	ESP,20
-	ADD	ESI,DWORD [-344+EBP]
-	ADD	EDI,DWORD [-348+EBP]
-	JS	L26
-L14:
-	TEST	ESI,ESI
-	JS	L27
-L15:
-	MOVSX	EAX,WORD [4084]
-	SUB	EAX,16
-	CMP	EDI,EAX
-	JLE	L16
-	MOV	EDI,EAX
-L16:
-	MOVSX	EAX,WORD [4086]
-	SUB	EAX,16
-	CMP	ESI,EAX
-	JLE	L17
-	MOV	ESI,EAX
-L17:
-	PUSH	ESI
-	PUSH	EDI
-	PUSH	LC8
-	PUSH	EBX
-	CALL	_sprintf
-	PUSH	15
-	PUSH	79
-	PUSH	0
-	PUSH	0
-	PUSH	14
-	CALL	_box_fill
-	ADD	ESP,36
-	PUSH	EBX
-	PUSH	7
-	PUSH	0
-	PUSH	0
 	CALL	_draw_ascii_font8
 	LEA	EAX,DWORD [-332+EBP]
-	PUSH	16
-	PUSH	EAX
-	PUSH	ESI
-	PUSH	EDI
-	PUSH	16
-	PUSH	16
-	CALL	_draw_block8_8
-	ADD	ESP,40
-	JMP	L18
-L27:
-	XOR	ESI,ESI
-	JMP	L15
-L26:
-	XOR	EDI,EDI
-	JMP	L14
-L25:
-	PUSH	LC4
-	CALL	_get_bdata_fifo
-	MOV	EBX,EAX
-	CALL	_io_sti
-	PUSH	EBX
-	LEA	EBX,DWORD [-76+EBP]
-	PUSH	LC6
-	PUSH	EBX
-	CALL	_sprintf
-	PUSH	31
-	PUSH	15
-	PUSH	16
-	PUSH	0
-	PUSH	14
-	CALL	_box_fill
 	ADD	ESP,36
-	PUSH	EBX
-	PUSH	7
-	PUSH	16
+	PUSH	14
+	PUSH	EAX
+	CALL	_init_mouse_cursor8
 	PUSH	0
-	CALL	_draw_ascii_font8
-	JMP	L23
-L24:
-	CALL	_io_stihlt
-	JMP	L18
+	PUSH	EDI
+	CALL	_sheet_switch
+	ADD	ESP,16
+L2:
+	JMP	L2
 	GLOBAL	_keyboard_fifo
 [SECTION .data]
 	ALIGNB	16
